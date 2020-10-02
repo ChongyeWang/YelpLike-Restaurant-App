@@ -12,6 +12,7 @@ class Profile extends Component {
     constructor(){
         super();
         this.state = {
+            authFlag: false,
             name : "",
             email: "",
             location: "",
@@ -24,26 +25,29 @@ class Profile extends Component {
     componentDidMount(){
         axios.get('http://localhost:3001/profile')
             .then((response) => {
-            //update the state with the response data
-    
-            console.log(response.data.user);
-            console.log(response.data.email);
-            console.log(response.data.location);
-            console.log(response.data.dish);
-            console.log(logo);
+                //update the state with the response data
+                this.setState({
+                    name: response.data.user,
+                    email: response.data.email,
+                    location: response.data.email,
+                    dish: response.data.dish,
+                    authFlag : true
+                });
+                
+            }).catch(err => {
+                this.setState({
+                    authFlag : false,
 
-            this.setState({
-                name: response.data.user,
-                email: response.data.email,
-                location: response.data.email,
-                dish: response.data.dish
+                })      
             });
-            
-        });
     }
     
 	
     render(){
+        let redirectVar = null;
+        if(this.state.authFlag === false){
+            redirectVar = <Redirect to= "/restaurant-login"/>
+        }
         var name = this.state.user;
         var email = this.state.email;
         var location = this.state.location;
@@ -52,6 +56,7 @@ class Profile extends Component {
        
         return(
         <div>
+            {redirectVar}
             <div style={{marginLeft: '100px'}}>
             <img src={logo} alt="Logo" style={{width:'150px'}}/>     
             <h2>{name}</h2>

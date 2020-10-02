@@ -75,31 +75,6 @@ class Register extends Component{
                 
             });
 
-
-        // if (this.authFlag === true) {
-
-        //     const loginData = {
-        //         username : this.state.username,
-        //         password : this.state.password
-        //     }
-
-        //     axios.post('http://localhost:3001/login', loginData)
-        //         .then(response => {
-        //             console.log("Status Code : ",response.status);
-        //             if(response.status === 200){
-        //                 this.setState({
-        //                     authFlag : true
-        //                 })
-        //                 console.log(cookie.load('cookie'));
-        //             }else{
-        //                 this.setState({
-        //                     authFlag : false,
-        //                     message : true
-        //                 })
-        //             }
-        //         });
-        // }
-
     }
 
     render(){ 

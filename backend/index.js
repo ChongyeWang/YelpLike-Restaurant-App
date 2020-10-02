@@ -36,12 +36,6 @@ app.use(function(req, res, next) {
     next();
   });
 
-  var Users = [{
-      username : "admin",
-      password : "admin",
-      email : "admin@gmail.com"
-  }]
-
 
 let connection = mysql.createConnection({
     host: 'localhost',
@@ -83,6 +77,7 @@ app.post('/login',function(req,res){
             
             req.session.user = resUser;
             req.session.restaurant = false;
+            req.session.customer = true;
             res.writeHead(200,{
                 'Content-Type' : 'text/plain'
             })
@@ -180,6 +175,7 @@ app.post('/restaurantlogin',function(req,res){
             
             req.session.user = resUser;
             req.session.restaurant = true;
+            req.session.customer = false;
             res.writeHead(200,{
                 'Content-Type' : 'text/plain'
             })
@@ -214,51 +210,59 @@ app.get('/home', function(req,res){
 
 
 app.get('/profile', function(req,res){
-    console.log(111111);    
-    var username = req.session.user;  
-
-    var resName;
-    var resEmail;
-    var resLocation;
-
-    var data = {};
-
-    connection.query("SELECT * FROM restaurant WHERE username = " + "'" + username + "'", function (err, result) {
-        console.log(result);
-
-        resName = result[0].name;
-        resEmail = result[0].email;
-        resLocation = result[0].location;
-
-        data['user'] = resName;
-        data['email'] = resEmail;
-        data['location'] = resLocation;
-
-    });
-
-    connection.query("SELECT * FROM dish WHERE username = " + "'" + username + "'", function (err, result) {
-
-        let dishArray = [];
-        for (var i = 0; i < result.length; i++) {
-            let ele = {
-                'name': result[i].name,
-                'price': result[i].price,
-                'category': result[i].category,
-            }
-            dishArray.push(ele);
-        }
-        data['dish'] = dishArray;
-
-        console.log(JSON.stringify(data));
-
-        res.writeHead(200,{
+    if (req.session.restaurant === undefined || req.session.restaurant === false) {
+        res.writeHead(401,{
             'Content-Type' : 'text/plain'
-        })
-        res.end(JSON.stringify(data));
+        });
+        res.end("Login First")
+    }
+    else {   
+        var username = req.session.user;  
 
-    });
+        var resName;
+        var resEmail;
+        var resLocation;
 
-    
+        var data = {};
+
+        connection.query("SELECT * FROM restaurant WHERE username = " + "'" + username + "'", function (err, result) {
+            console.log(result);
+
+            resName = result[0].name;
+            resEmail = result[0].email;
+            resLocation = result[0].location;
+
+            data['user'] = resName;
+            data['email'] = resEmail;
+            data['location'] = resLocation;
+
+            connection.query("SELECT * FROM dish WHERE username = " + "'" + username + "'", function (err, result) {
+
+                let dishArray = [];
+                for (var i = 0; i < result.length; i++) {
+                    let ele = {
+                        'name': result[i].name,
+                        'price': result[i].price,
+                        'category': result[i].category,
+                    }
+                    dishArray.push(ele);
+                }
+                data['dish'] = dishArray;
+
+                console.log(JSON.stringify(data));
+
+                res.writeHead(200,{
+                    'Content-Type' : 'text/plain'
+                })
+                res.end(JSON.stringify(data));
+
+            });
+
+        });
+
+        
+    }
+     
 });
 
 
@@ -289,6 +293,126 @@ app.post('/add_dish',function(req,res){
         });
         res.end("Added Successfully.");
     } 
+
+});
+
+
+
+app.get('/restaurant', function(req,res){
+    
+    connection.query("SELECT * FROM restaurant;", function (err, result) {
+        console.log(result);
+
+        let data = [];
+        for (var i = 0; i < result.length; i++) {
+            let ele = {
+                'id': result[i].id,
+                'name': result[i].name,
+                'email': result[i].email,
+                'location': result[i].location
+            }
+            data.push(ele);
+        }
+
+        console.log(JSON.stringify(data));
+
+        res.writeHead(200,{
+            'Content-Type' : 'text/plain'
+        })
+        res.end(JSON.stringify(data));
+
+    });  
+  
+});
+
+
+
+app.get('/restaurant/:id', function(req,res){
+    var id = req.params.id;
+    console.log(id);
+    
+    var data = {};
+
+    connection.query("SELECT * FROM restaurant WHERE id = " + "'" + id + "'", function (err, result) {
+
+        var resName = result[0].name;
+        var resEmail = result[0].email;
+        var resLocation = result[0].location;
+        var username = result[0].username;
+
+        data['user'] = resName;
+        data['email'] = resEmail;
+        data['location'] = resLocation;
+
+
+        connection.query("SELECT * FROM dish WHERE username = " + "'" + username + "'", function (err, result) {
+
+            let dishArray = [];
+            for (var i = 0; i < result.length; i++) {
+                let ele = {
+                    'name': result[i].name,
+                    'price': result[i].price,
+                    'category': result[i].category,
+                }
+                dishArray.push(ele);
+            }
+            data['dish'] = dishArray;
+
+            console.log(JSON.stringify(data));
+
+            connection.query("SELECT * FROM review WHERE resid = " + "'" + id + "'" + "ORDER BY date", function (err, result) {
+
+                let reviewArray = [];
+                for (var i = 0; i < result.length; i++) {
+                    let ele = {
+                        'date': result[i].date,
+                        'content': result[i].content,
+                    }
+                    reviewArray.push(ele);
+                }
+                data['review'] = reviewArray;
+
+                console.log(JSON.stringify(data));
+
+                res.writeHead(200,{
+                    'Content-Type' : 'text/plain'
+                })
+                res.end(JSON.stringify(data));
+
+            });
+
+        });
+
+    });
+  
+});
+
+
+
+
+app.post('/restaurant/:id/review', function(req,res){
+    var id = req.params.id;
+    
+    var content = req.body.content;
+
+    console.log(content);
+
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var yyyy = today.getFullYear();
+
+    today = mm + '/' + dd + '/' + yyyy;
+    var date = today.toString();
+
+    connection.query("INSERT INTO review (resid, date, content) VALUES (" + "'" + 
+        id + "'" + "," + "'" + date + "'" + "," + "'" + content + "'" + ")", function (err, result) {
+    
+        res.writeHead(200,{
+            'Content-Type' : 'text/plain'
+        })
+        res.end("hahaha");
+    });
 
 });
 

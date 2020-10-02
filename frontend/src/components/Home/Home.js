@@ -3,7 +3,9 @@ import '../../App.css';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
 import axios from 'axios';
-
+import logo from '../../public/home.jpg';
+import './Home.css';
+import {Link} from 'react-router-dom';
 
 class Home extends Component {
     constructor(){
@@ -38,17 +40,22 @@ class Home extends Component {
 
     render(){
        
-        let redirectVar = null;
-        if(!cookie.load('cookie')){
-            redirectVar = <Redirect to= "/login"/>
-        }
+        // let redirectVar = null;
+        // if(!cookie.load('cookie')){
+        //     redirectVar = <Redirect to= "/login"/>
+        // }
 
         return(
             <div>
-            {redirectVar} 
-            <h2>Current User:</h2>
-            <h2>{this.state.user}</h2>
-            <h2>{this.state.email}</h2>
+
+            <div >
+              <img class="logo" src={logo} alt="Logo" style={{width:'100%'}}/>    
+              <div class="centered"><a><Link to="/open-restaurant" style={{color:'black'}}>Open a New Restaurant</Link></a></div>
+              <div class="bottom"><a><Link to="/login" style={{color:'black'}}>Login as a Customer</Link></a></div>
+            
+              <div class="list"><a><Link to="/restaurant" style={{color:'black'}}>View All Restaurants</Link></a></div>
+            </div>
+
                
             </div> 
         )
