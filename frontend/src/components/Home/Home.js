@@ -33,17 +33,11 @@ class Home extends Component {
                     });
                 }
 
-            
         });
     }
     
 
     render(){
-       
-        // let redirectVar = null;
-        // if(!cookie.load('cookie')){
-        //     redirectVar = <Redirect to= "/login"/>
-        // }
 
         return(
             <div>
@@ -54,6 +48,8 @@ class Home extends Component {
               <div class="bottom"><a><Link to="/login" style={{color:'black'}}>Login as a Customer</Link></a></div>
             
               <div class="list"><a><Link to="/restaurant" style={{color:'black'}}>View All Restaurants</Link></a></div>
+              <div class="customer"><a><Link to="/customers" style={{color:'black'}}>View All Our Customers</Link></a></div>
+              <div class="event"><a><Link to="/events" style={{color:'black'}}>View All Events</Link></a></div>
             </div>
 
                

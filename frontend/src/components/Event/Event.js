@@ -14,9 +14,11 @@ class Event extends Component{
         this.state = {
             name : "",
             restaurant : "",
+            content : "",
             date : "",
             time : "",
-            location : ""
+            location : "",
+            authFlag: true
         }
         
     }
@@ -33,6 +35,11 @@ class Event extends Component{
     restaurantChangeHandler = (e) => {
         this.setState({
             restaurant : e.target.value
+        })
+    }
+    contentChangeHandler = (e) => {
+        this.setState({
+            content : e.target.value
         })
     }
 
@@ -61,26 +68,40 @@ class Event extends Component{
         e.preventDefault();
         const data = {
             name : this.state.name,
-            price : this.state.price,
-            category : this.state.category
+            restaurant : this.state.restaurant,
+            content : this.state.content,
+            date : this.state.date,
+            time : this.state.time,
+            location : this.state.location
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
 
-        axios.post('http://localhost:3001/add_dish',data)
+        axios.post('http://localhost:3001/add_event',data)
             .then(response => {
-                console.log("Status Code : ",response.status);
-        
+                console.log(response);
+                this.setState({
+
+                })
                 
-            })
+            }).catch(err => {
+                this.setState({
+                    authFlag : false
+
+                })      
+            });
 
     }
 
     render(){ 
 
+        let redirectVar = null;
+        if(this.state.authFlag === false){
+            redirectVar = <Redirect to= "/restaurant-login"/>
+        }
         return(
             <div>
-
+                {redirectVar}
                 <div class="container">
                     
                     <div class="">
@@ -97,12 +118,15 @@ class Event extends Component{
                                     <input onChange = {this.restaurantChangeHandler} type="text" class="form-control" name="restaurant" placeholder="restaurant"/>
                                 </div>
                                 <div class="form-group">
+                                    <input onChange = {this.contentChangeHandler} type="text" class="form-control" name="content" placeholder="content"/>
+                                </div>
+                                <div class="form-group">
                                     <input onChange = {this.dateChangeHandler} type="text" class="form-control" name="date" placeholder="date"/>
                                 </div>
                                  <div class="form-group">
                                     <input onChange = {this.timeChangeHandler} type="text" class="form-control" name="time" placeholder="time"/>
                                 </div>
-                                 <div class="form-group">
+                                <div class="form-group">
                                     <input onChange = {this.locationChangeHandler} type="text" class="form-control" name="location" placeholder="location"/>
                                 </div>
                                 <button onClick = {this.submitEvent} class="btn btn-primary">Add</button>                 

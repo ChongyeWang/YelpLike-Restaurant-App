@@ -7,7 +7,15 @@ var cookieParser = require('cookie-parser');
 var cors = require('cors');
 var mysql = require('mysql');
 
+var config = require('./config.js');
+
+
+const path = require("path");
+const multer = require("multer");
+
+
 app.set('view engine', 'ejs');
+
 
 //use cors to allow cross origin resource sharing
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
@@ -37,19 +45,15 @@ app.use(function(req, res, next) {
   });
 
 
-let connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'rootadmin',
-    database: 'Yelp',
-});
+var restaurant = require('./restaurant');
+var customers = require('./customer');
 
-connection.connect(function(err) {
-  if (err) {
-    return console.error("Error:" + err.message);
-  }
-  console.log('Connected...')
-})
+app.use('/restaurant', restaurant);
+app.use('/customers', customers);
+
+
+
+var connection = config.connection;
 
 
 //Route to handle Post Request Call
@@ -78,6 +82,7 @@ app.post('/login',function(req,res){
             req.session.user = resUser;
             req.session.restaurant = false;
             req.session.customer = true;
+            req.session.customerId = result[0].id;
             res.writeHead(200,{
                 'Content-Type' : 'text/plain'
             })
@@ -93,6 +98,15 @@ app.post('/login',function(req,res){
        
     });
 
+});
+
+
+
+
+app.get('/logout',function(req,res){
+    
+    console.log("logout");
+    req.session.destroy();
 });
 
 
@@ -170,10 +184,12 @@ app.post('/restaurantlogin',function(req,res){
         if (result.length !== 0) {
             let resUser = result[0].username;
             let resEmail = result[0].email;
+            let resId = result[0].id;
 
             res.cookie('cookie',resUser + " " + resEmail,{maxAge: 900000, httpOnly: false, path : '/'});
             
             req.session.user = resUser;
+            req.session.restaurantId = resId;
             req.session.restaurant = true;
             req.session.customer = false;
             res.writeHead(200,{
@@ -198,7 +214,8 @@ app.post('/restaurantlogin',function(req,res){
 
 //Route to get All Books when user visits the Home Page
 app.get('/home', function(req,res){
-    console.log("Inside Home Login");    
+    console.log("Inside Home Login");
+    console.log(req.session)    
     res.writeHead(200,{
         'Content-Type' : 'application/json'
     });
@@ -249,20 +266,33 @@ app.get('/profile', function(req,res){
                 }
                 data['dish'] = dishArray;
 
-                console.log(JSON.stringify(data));
+                var id = req.session.restaurantId;
+                console.log(id);
+                connection.query("SELECT * FROM orders WHERE restaurantId = " + "'" + id + "'", function (err, result) {
 
-                res.writeHead(200,{
-                    'Content-Type' : 'text/plain'
-                })
-                res.end(JSON.stringify(data));
+                    let orderArray = [];
+                    for (var i = 0; i < result.length; i++) {
+                        let ele = {
+                            'username': result[i].username,
+                            'orders': result[i].items,
+                            'delivery': result[i].delivery,
+                            'date': result[i].date
+                        }
+                        orderArray.push(ele);
+                    }
+                    data['order'] = orderArray;
 
+                    console.log(JSON.stringify(data));
+
+                    res.writeHead(200,{
+                        'Content-Type' : 'text/plain'
+                    })
+                    res.end(JSON.stringify(data));
+
+                });
             });
-
         });
-
-        
     }
-     
 });
 
 
@@ -298,20 +328,113 @@ app.post('/add_dish',function(req,res){
 
 
 
-app.get('/restaurant', function(req,res){
-    
-    connection.query("SELECT * FROM restaurant;", function (err, result) {
-        console.log(result);
+app.post('/add_event',function(req,res){
 
-        let data = [];
+    if (req.session.restaurant === undefined || req.session.restaurant === false) {
+        res.writeHead(401,{
+            'Content-Type' : 'text/plain'
+        });
+        res.end("Login First")
+    }
+    else {
+        var name = req.body.name;
+        var restaurant = req.body.restaurant;
+        var content = req.body.content;
+        var date = req.body.date;
+        var time = req.body.time;
+        var location = req.body.location;
+
+        console.log(1111);
+
+        connection.query("INSERT INTO event (name, restaurant, content, date, time, location) VALUES (" + "'" + 
+            name + "'" + "," + "'" + restaurant + "'" + "," + "'" + content + "'" + "," + "'" + 
+            date + "'" + "," + "'" + time + "'" + "," + "'" + location + "'" + ")", function (err, result) {
+            res.writeHead(200,{
+                'Content-Type' : 'text/plain'
+            });
+            res.end("Added Successfully.");
+        });
+        
+    } 
+
+});
+
+
+
+
+app.get('/events', function(req,res){
+    
+    connection.query("SELECT * FROM event;", function (err, result) {
+
+        var data = {};
+        let data1 = [];
         for (var i = 0; i < result.length; i++) {
             let ele = {
                 'id': result[i].id,
                 'name': result[i].name,
-                'email': result[i].email,
-                'location': result[i].location
+                'restaurant': result[i].restaurant,
+                'content': result[i].content,
+                'date': result[i].date,
+                'time': result[i].time,
+                'location': result[i].location,
             }
-            data.push(ele);
+            data1.push(ele);
+        }
+
+        connection.query("SELECT * FROM event_customer;", function (err, result) {
+
+            let data2 = [];
+            for (var i = 0; i < result.length; i++) {
+                let ele = {
+                    'id': result[i].id,
+                    'user': result[i].username,
+                    'userId': result[i].userId
+                }
+                data2.push(ele);
+            }
+
+            data['data1'] = data1;
+            data['data2'] = data2;
+
+            console.log(JSON.stringify(data));
+
+            res.writeHead(200,{
+                'Content-Type' : 'text/plain'
+            })
+            res.end(JSON.stringify(data));
+
+        }); 
+
+    });  
+  
+});
+
+
+
+app.post('/events-search', function(req,res){
+
+    var keyword = req.body.keyword;
+    console.log(keyword);
+
+    data = [];
+
+    // if(id !== undefined && id.length > 0) {
+    connection.query("SELECT * FROM event", function (err, result) {
+
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].name.includes(keyword)) {
+                let ele = {
+                    'id': result[i].id,
+                    'name': result[i].name,
+                    'restaurant': result[i].restaurant,
+                    'content': result[i].content,
+                    'date': result[i].date,
+                    'time': result[i].time,
+                    'location': result[i].location,
+                }
+                data.push(ele);
+            }
+
         }
 
         console.log(JSON.stringify(data));
@@ -321,101 +444,71 @@ app.get('/restaurant', function(req,res){
         })
         res.end(JSON.stringify(data));
 
-    });  
+    }); 
   
 });
 
 
+app.post('/events/register', function(req,res){
 
-app.get('/restaurant/:id', function(req,res){
-    var id = req.params.id;
-    console.log(id);
-    
-    var data = {};
-
-    connection.query("SELECT * FROM restaurant WHERE id = " + "'" + id + "'", function (err, result) {
-
-        var resName = result[0].name;
-        var resEmail = result[0].email;
-        var resLocation = result[0].location;
-        var username = result[0].username;
-
-        data['user'] = resName;
-        data['email'] = resEmail;
-        data['location'] = resLocation;
-
-
-        connection.query("SELECT * FROM dish WHERE username = " + "'" + username + "'", function (err, result) {
-
-            let dishArray = [];
-            for (var i = 0; i < result.length; i++) {
-                let ele = {
-                    'name': result[i].name,
-                    'price': result[i].price,
-                    'category': result[i].category,
-                }
-                dishArray.push(ele);
-            }
-            data['dish'] = dishArray;
-
-            console.log(JSON.stringify(data));
-
-            connection.query("SELECT * FROM review WHERE resid = " + "'" + id + "'" + "ORDER BY date", function (err, result) {
-
-                let reviewArray = [];
-                for (var i = 0; i < result.length; i++) {
-                    let ele = {
-                        'date': result[i].date,
-                        'content': result[i].content,
-                    }
-                    reviewArray.push(ele);
-                }
-                data['review'] = reviewArray;
-
-                console.log(JSON.stringify(data));
-
-                res.writeHead(200,{
-                    'Content-Type' : 'text/plain'
-                })
-                res.end(JSON.stringify(data));
-
-            });
-
-        });
-
-    });
-  
-});
-
-
-
-
-app.post('/restaurant/:id/review', function(req,res){
-    var id = req.params.id;
-    
-    var content = req.body.content;
-
-    console.log(content);
-
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var yyyy = today.getFullYear();
-
-    today = mm + '/' + dd + '/' + yyyy;
-    var date = today.toString();
-
-    connection.query("INSERT INTO review (resid, date, content) VALUES (" + "'" + 
-        id + "'" + "," + "'" + date + "'" + "," + "'" + content + "'" + ")", function (err, result) {
-    
-        res.writeHead(200,{
+    if (req.session.customer === undefined || req.session.customer === false) {
+        res.writeHead(401,{
             'Content-Type' : 'text/plain'
-        })
-        res.end("hahaha");
-    });
+        });
+        res.end("Login First")
+    }
+    else {
+        var id = req.body.id;
+        var userId = req.session.customerId;
+        var user = req.session.user;
+        console.log(111);
+        console.log(id);
+        console.log(userId);
 
+        connection.query("INSERT INTO event_customer (id, userId, username) VALUES (" + "'" + 
+            id + "'" + "," + "'" + userId + "'" + "," + "'" + user + "'" + ")", function (err, result) {
+            res.writeHead(200,{
+                'Content-Type' : 'text/plain'
+            });
+            res.end("Added Successfully.");
+        });
+    }
+  
 });
 
+
+
+const upload = multer({
+   storage: multer.diskStorage({
+       destination: "../frontend/src/public/uploads/",
+       filename: function(req, file, cb){
+          cb(null, "IMAGE-" + file.originalname);
+       }
+    }),
+   limits:{fileSize: 1000000},
+}).single("myImage");
+
+
+app.post('/upload-customer', function(req,res){
+    upload(req, res, (err) => {
+      console.log("Request ---", req.body);
+      console.log("Request file ---", req.file);
+      if(!err)
+         return res.send(200).end();
+   });
+  
+});
+
+
+app.post('/upload-restaurant', function(req,res){
+    upload(req, res, (err) => {
+      console.log("Request ---", req.body);
+      console.log("Request file ---", req.file);
+      if(!err)
+         return res.send(200).end();
+   });
+  
+});
 
 //start your server on port 3001
 app.listen(3001);

@@ -1,0 +1,14 @@
+
+
+
+
+#checkboxes label {
+  width: 300px;
+  font-size: 30px;
+  font-weight: bold;
+  display: block;
+}
+
+#checkboxes label:hover {
+  background-color: #1e90ff;
+}

@@ -11,6 +11,11 @@ import Dish from './Dish/Dish';
 import Restaurant from './Restaurant/Restaurant';
 import Page from './Page/Page';
 import Event from './Event/Event';
+import Edit from './Edit/Edit';
+import Events from './Events/Events';
+import Customers from './Customers/Customers';
+import Customer from './Customer/Customer';
+import EditCustomer from './EditCustomer/EditCustomer';
 //Create a Main Component
 class Main extends Component {
 
@@ -28,10 +33,18 @@ class Main extends Component {
                 <Route path="/restaurant-login" component={RestaurantLogin}/>
                 <Route path="/add-dish" component={Dish}/>
                 <Route path="/add-event" component={Event}/>
+                <Route path="/events" component={Events}/>
                 <Switch>
                 <Route path="/restaurant/:id/review" component={Page}/>
+                <Route path="/restaurant/:id/edit" component={Edit}/>
                 <Route path="/restaurant/:id" component={Page}/>
                 <Route path="/restaurant" component={Restaurant}/>
+                </Switch>
+
+                <Switch>
+                <Route path="/customers/:id/edit" component={EditCustomer}/>
+                <Route path="/customers/:id" component={Customer}/>
+                <Route path="/customers" component={Customers}/>
                 </Switch>
                 
             </div>

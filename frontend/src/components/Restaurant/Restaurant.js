@@ -3,20 +3,7 @@ import '../../App.css';
 import axios from 'axios';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useParams
-} from "react-router-dom";
 
-function User() {
-  let { id } = useParams();
-  return (
-    <h2>User {id}</h2>
-  )
-}
 
 //Define a Login Component
 class Restaurant extends Component{
@@ -25,7 +12,9 @@ class Restaurant extends Component{
     constructor(){
         super();
         this.state = {
-            res: []
+            res: [],
+            keyword: "",
+            res3: [],
         }
 
     }  
@@ -46,6 +35,25 @@ class Restaurant extends Component{
         });
     }
 
+    keyChangeHandler = (e) => {
+        this.setState({
+            keyword : e.target.value
+        })
+
+        const data = {
+            keyword : e.target.value,
+        }
+       
+        axios.post('http://localhost:3001/restaurant/search', data)
+        .then(response => {
+             this.setState({
+                res3: response.data
+            });
+            
+            console.log("Status Code : ",response.data);
+        }) 
+    }
+
 
     render(){ 
         var res = this.state.res;
@@ -55,12 +63,41 @@ class Restaurant extends Component{
             <span style={{display:'inline-block', width: '50px'}}></span>{d.email}
         </div>);
 
+
+        var res3 = this.state.res3;
+        const listItems3 = res3.map((d) => <div key={d.id} style={{marginLeft: '200px', marginTop: '10px'}}>
+      
+            {d.name}
+            <span style={{display:'inline-block', width: '20px'}}></span>{d.email}
+            <span style={{display:'inline-block', width: '20px'}}></span>{d.location}
+
+
+        </div>);
+
+
         return(
-            
           <div>
-            <h3>{listItems}</h3>
-            
-        
+          
+              <div class="" style={{marginLeft:'200px', marginTop:'30px', width:'300px'}}>
+                  <div class="panel">
+                  </div>
+                  <div class="form-group">
+                      <input onChange = {this.keyChangeHandler} type="text" class="form-control" name="key" placeholder="Search Restaurant"/>
+                  </div>
+                                  
+              </div>
+
+              <h4>{listItems3}</h4>
+
+
+
+              <h2 style={{marginLeft: '200px', marginTop: '50px'}}>All Restaurants List: </h2>
+              <h3 style={{marginLeft: '200px', marginTop: '50px'}}>
+              Name  <span style={{display:'inline-block', width: '20px'}}></span>
+              Location  <span style={{display:'inline-block', width: '20px'}}></span>
+              Contact</h3>
+              <h4>{listItems}</h4>
+              
           </div>
    
         )
