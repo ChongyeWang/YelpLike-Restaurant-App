@@ -3,7 +3,13 @@ import '../../App.css';
 import axios from 'axios';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
+import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
+
+const mapStyles = {
+  width: '80%',
+  height: '100%',
+};
 
 //Define a Login Component
 class Restaurant extends Component{
@@ -15,6 +21,7 @@ class Restaurant extends Component{
             res: [],
             keyword: "",
             res3: [],
+            pos: [],
         }
 
     }  
@@ -24,13 +31,22 @@ class Restaurant extends Component{
         axios.get('http://localhost:3001/restaurant')
             .then((response) => {
             //update the state with the response data
-    
-            console.log(response.data);
+
+            var pos = []
+            for (var i = 0; i < response.data.length; i++) {
+                var data = {};
+                var ele = response.data[i];
+                data['latitude'] = parseFloat(ele['lat']);
+                data['longitude'] = parseFloat(ele['lon']);
+                pos.push(data);
+            }
 
             this.setState({
-                res: response.data
-
+                res: response.data,
+                pos: pos
             });
+
+            console.log(this.state.pos);
             
         });
     }
@@ -52,6 +68,16 @@ class Restaurant extends Component{
             
             console.log("Status Code : ",response.data);
         }) 
+    }
+
+    displayMarkers = () => {
+      return this.state.pos.map((store, index) => {
+        return <Marker key={index} id={index} position={{
+         lat: store.latitude,
+         lng: store.longitude
+       }}
+       onClick={() => console.log("You clicked me!")} />
+      })
     }
 
 
@@ -97,6 +123,19 @@ class Restaurant extends Component{
               Location  <span style={{display:'inline-block', width: '20px'}}></span>
               Contact</h3>
               <h4>{listItems}</h4>
+
+              <div style={{marginLeft:'200px'}}>
+
+               <Map
+          google={this.props.google}
+          zoom={8}
+          style={mapStyles}
+          initialCenter={{ lat: 47.444, lng: -122.176}}
+        >
+          {this.displayMarkers()}
+        </Map>
+
+              </div>
               
           </div>
    
@@ -106,4 +145,6 @@ class Restaurant extends Component{
 
 
 //export Register Component
-export default Restaurant;
+export default  GoogleApiWrapper({
+  apiKey: 'AIzaSyCgPAURPD6hyNrsQf1qqa2VoRicjwqJjBk'
+})(Restaurant);

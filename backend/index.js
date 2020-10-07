@@ -6,9 +6,7 @@ var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var cors = require('cors');
 var mysql = require('mysql');
-
 var config = require('./config.js');
-
 
 const path = require("path");
 const multer = require("multer");
@@ -29,9 +27,6 @@ app.use(session({
     activeDuration      :  5 * 60 * 1000
 }));
 
-// app.use(bodyParser.urlencoded({
-//     extended: true
-//   }));
 app.use(bodyParser.json());
 
 //Allow Access Control
@@ -56,16 +51,8 @@ app.use('/customers', customers);
 var connection = config.connection;
 
 
-//Route to handle Post Request Call
 app.post('/login',function(req,res){
-    
-    // Object.keys(req.body).forEach(function(key){
-    //     req.body = JSON.parse(key);
-    // });
-    // var username = req.body.username;
-    // var password = req.body.password;
     console.log("Inside Login Post Request");
-    //console.log("Req Body : ", username + "password : ",password);
     console.log("Req Body : ",req.body);
 
     var username = req.body.username;
@@ -76,9 +63,7 @@ app.post('/login',function(req,res){
         if (result.length !== 0) {
             let resUser = result[0].username;
             let resEmail = result[0].email;
-
             res.cookie('cookie',resUser + " " + resEmail,{maxAge: 900000, httpOnly: false, path : '/'});
-            
             req.session.user = resUser;
             req.session.restaurant = false;
             req.session.customer = true;
@@ -94,7 +79,7 @@ app.post('/login',function(req,res){
                 'Content-Type' : 'text/plain'
             });
             res.end("Incorrect credentials.");
-            }
+        }
        
     });
 
@@ -116,11 +101,16 @@ app.post('/register',function(req,res){
     var username = req.body.username;
     var password =  req.body.password;
     var email = req.body.email;
+    var phone = req.body.phone;
+    var web = req.body.web;
+    var likes = req.body.like;
     
     connection.query("SELECT * FROM customer WHERE username = " + "'" + username + "'", function (err, result) {
         console.log(result);
         if (result.length === 0) {
-            connection.query("INSERT INTO customer (username, password, email) VALUES (" + "'" + username + "'" + "," + "'" + password + "'" + "," + "'" + email + "'" + ")", function (err, result) {
+            connection.query("INSERT INTO customer (username, password, email, phone, web, likes) VALUES (" + 
+                "'" + username + "'" + "," + "'" + password + "'" + "," + "'" + email + "'" 
+                + "," + "'" + phone + "'" + "," + "'" + web + "'" + "," + "'" + likes + "'" + ")", function (err, result) {
             if (err) throw (err);
             console.log(result);
             });
@@ -146,13 +136,16 @@ app.post('/openrestaurant',function(req,res){
     var email = req.body.email;
     var name = req.body.name;
     var location = req.body.location;
+    var lat = req.body.lat;
+    var lon = req.body.lon;
     
     connection.query("SELECT * FROM restaurant WHERE username = " + "'" + username + "'", function (err, result) {
         console.log(result);
         if (result.length === 0) {
-            connection.query("INSERT INTO restaurant (username, password, email, name, location) VALUES (" + "'" + 
+            connection.query("INSERT INTO restaurant (username, password, email, name, location, lat, lon) VALUES (" + "'" + 
                 username + "'" + "," + "'" + password + "'" + "," + "'" + email + "'" + "," + "'" + 
-                name + "'" + "," + "'" + location + "'" + ")", function (err, result) {
+                name + "'" + "," + "'" + location + "'" + "," + "'" + lat + "'" + 
+                "," + "'" + lon + "'" + ")", function (err, result) {
             if (err) throw (err);
             console.log(result);
             });
@@ -273,10 +266,12 @@ app.get('/profile', function(req,res){
                     let orderArray = [];
                     for (var i = 0; i < result.length; i++) {
                         let ele = {
+                            'id': result[i].id,
                             'username': result[i].username,
                             'orders': result[i].items,
                             'delivery': result[i].delivery,
-                            'date': result[i].date
+                            'date': result[i].date,
+                            'status': result[i].status
                         }
                         orderArray.push(ele);
                     }
@@ -507,6 +502,99 @@ app.post('/upload-restaurant', function(req,res){
       if(!err)
          return res.send(200).end();
    });
+  
+});
+
+
+
+app.post('/order-update', function(req,res){
+    
+    var id = req.body.id;
+    var status = "delivered";
+
+    console.log(id);
+
+    connection.query("UPDATE orders SET status = " + "'" + status + "'" + 
+        " WHERE id = " + "'" + id + "'" + ";", function (err, result) {
+    
+        res.writeHead(200,{
+            'Content-Type' : 'text/plain'
+        })
+        res.end("Success");
+    });
+
+});
+
+
+app.post('/order-search', function(req,res){
+
+    var keyword = req.body.keyword;
+    console.log(keyword);
+
+    data = [];
+
+    // if(id !== undefined && id.length > 0) {
+    connection.query("SELECT * FROM orders", function (err, result) {
+
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].status.includes(keyword)) {
+                let ele = {
+                    'id': result[i].id,
+                    'username': result[i].username,
+                    'orders': result[i].items,
+                    'delivery': result[i].delivery,
+                    'date': result[i].date,
+                    'status': result[i].status
+                }
+                data.push(ele);
+            }
+
+        }
+
+        console.log(JSON.stringify(data));
+
+        res.writeHead(200,{
+            'Content-Type' : 'text/plain'
+        })
+        res.end(JSON.stringify(data));
+
+    }); 
+  
+});
+
+
+
+app.get('/customers-setting', function(req,res){
+    console.log(req.session.customer);
+    if (req.session.customer === undefined || req.session.customer === false) {
+        console.log("Login First");
+        res.writeHead(401,{
+            'Content-Type' : 'text/plain'
+        });
+        res.end("Login First");
+    }
+    else {
+        console.log(2222);
+        var id = req.session.customerId;
+        var data = {};
+
+        connection.query("SELECT * FROM customer WHERE id = " + "'" + id + "'", function (err, result) {
+
+            var name = result[0].username;
+            var email = result[0].email;
+
+            data['id'] = id;
+            data['name'] = name;
+            data['email'] = email;
+
+            res.writeHead(200,{
+                'Content-Type' : 'text/plain'
+            })
+            res.end(JSON.stringify(data));
+
+        });
+
+    }
   
 });
 

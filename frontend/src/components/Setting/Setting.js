@@ -8,7 +8,7 @@ import logo from '../../public/logo1.jpg';
 
 
 
-class Customer extends Component {
+class Setting extends Component {
 
 
     constructor(){
@@ -17,10 +17,8 @@ class Customer extends Component {
             authFlag: true,
             name : "",
             email: "",
-            phone: "",
-            web: "",
-            likes: "",
-            file: null
+            file: null,
+            id: ""
         }
         this.onFormSubmit = this.onFormSubmit.bind(this);
         this.onChange = this.onChange.bind(this);
@@ -28,27 +26,25 @@ class Customer extends Component {
 
     //get the data from backend  
     componentDidMount(){
-        var id = this.props.match.params.id;
-        axios.get(`http://localhost:3001/customers/${id}`)
+
+        axios.get('http://localhost:3001/customers-setting')
             .then((response) => {
                 //update the state with the response data
                 this.setState({
+                    id: response.data.id,
                     name: response.data.name,
                     email: response.data.email,
-                    phone: response.data.phone,
-                    web: response.data.web,
-                    likes: response.data.likes,
                 });
-
+                console.log(11111);
                 console.log(this.state.name);
-                console.log(this.state.email);
+                console.log(this.state.id);
 
                 
             }).catch(err => {
                 this.setState({
                     authFlag : false,
-
                 })
+                console.log(22222);
 
             });
     }
@@ -70,19 +66,21 @@ class Customer extends Component {
     }
     onChange(e) {
         var orig = e.target.files[0];
-        var id = this.props.match.params.id;
+        var id = this.state.id;
         var renamedFile = new File([orig], 'customer-' + id + '.png', {type: orig.type});
         console.log(renamedFile);
         this.setState({file:renamedFile});
     }
 
     render(){
+        let redirectVar = null;
+        if(!cookie.load('cookie')){
+            redirectVar = <Redirect to= "/login"/>
+        }
+
         var name = this.state.name;
         var email = this.state.email;
-        var phone = this.state.phone;
-        var web = this.state.web;
-        var likes = this.state.likes;
-        var id = this.props.match.params.id;
+        var id = this.state.id;
 
         var image;
         try {
@@ -99,6 +97,7 @@ class Customer extends Component {
       
         return(
         <div>
+            {redirectVar}
             <div style={{marginLeft: '100px'}}>
             
             </div>
@@ -111,17 +110,12 @@ class Customer extends Component {
                 <input type="file" name="myImage" onChange= {this.onChange} />
                 <button type="submit">Upload</button>
             </form>
-            <h3>Name : {name}</h3>
-            <h3>Email : {email}</h3>
-            <h3>Phone : {phone}</h3>
-            <h3>Website : {web}</h3>
-            <h3>Things Love : {likes}</h3>
+             <h3>Name : {name}</h3>
+            <h3>Contact : {email}</h3>
 
             <a href={'/customers/' + id + '/edit'}><h3>Edit Profile</h3></a>
 
-            </div> 
-
-            
+            </div>        
 
         </div> 
         )
@@ -130,4 +124,4 @@ class Customer extends Component {
 }
 
 //export Home Component
-export default Customer;
+export default Setting;

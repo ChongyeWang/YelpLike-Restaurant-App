@@ -15,6 +15,9 @@ class Register extends Component{
             username : "",
             password : "",
             email : "",
+            phone: "",
+            web : "",
+            like : "",
             authFlag : false,
             message : false
         }
@@ -45,6 +48,24 @@ class Register extends Component{
         })
     }
 
+    phoneChangeHandler = (e) => {
+        this.setState({
+            phone : e.target.value
+        })
+    }
+
+    webChangeHandler = (e) => {
+        this.setState({
+            web : e.target.value
+        })
+    }
+
+    likeChangeHandler = (e) => {
+        this.setState({
+            like : e.target.value
+        })
+    }
+
     //submit Login handler to send a request to the node backend
     submitLogin = (e) => {
         var headers = new Headers();
@@ -53,7 +74,11 @@ class Register extends Component{
         const data = {
             username : this.state.username,
             password : this.state.password,
-            email : this.state.email
+            email : this.state.email,
+            phone : this.state.phone,
+            web : this.state.web,
+            like : this.state.like,
+
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
@@ -74,7 +99,6 @@ class Register extends Component{
                 })
                 
             });
-
     }
 
     render(){ 
@@ -95,7 +119,7 @@ class Register extends Component{
                     <div class="login-form">
                         <div class="main-div">
                             <div class="panel">
-                                <h2>Register</h2>
+                            <h2>Register</h2>
                                 
                             </div>
                             
@@ -107,6 +131,18 @@ class Register extends Component{
                                 </div>
                                 <div class="form-group">
                                     <input onChange = {this.emailChangeHandler} type="email" class="form-control" name="email" placeholder="Email"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <input onChange = {this.phoneChangeHandler} type="text" class="form-control" name="phone" placeholder="Phone"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <input onChange = {this.webChangeHandler} type="text" class="form-control" name="web" placeholder="Website"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <input onChange = {this.likeChangeHandler} type="text" class="form-control" name="like" placeholder="Things Love"/>
                                 </div>
                                 <button onClick = {this.submitLogin} class="btn btn-primary">Register</button>                 
                         </div>

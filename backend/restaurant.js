@@ -23,7 +23,9 @@ router.get('/', function(req,res){
                 'id': result[i].id,
                 'name': result[i].name,
                 'email': result[i].email,
-                'location': result[i].location
+                'location': result[i].location,
+                'lat': result[i].lat,
+                'lon': result[i].lon
             }
             data.push(ele);
         }
@@ -181,10 +183,11 @@ router.post('/:id/place_order',function(req,res){
         var order = req.body.selectItems.toString();
 
         var date = new Date().toLocaleString();
+        var status = "pending";
 
-        connection.query("INSERT INTO orders (username, restaurantId, delivery, items, date) VALUES (" + "'" + 
+        connection.query("INSERT INTO orders (username, restaurantId, delivery, items, date, status) VALUES (" + "'" + 
             customer + "'" + "," + "'" + id + "'" + "," + "'" + delivery + "'" + "," + "'" + 
-            order + "'" + "," + "'" + date + "'" + ")", function (err, result) {
+            order + "'" + "," + "'" + date + "'" + "," + "'" + status + "'" + ")", function (err, result) {
             
         });
         res.writeHead(200,{

@@ -45,7 +45,7 @@ class Events extends Component{
         
     }
 
-    //submit Login handler to send a request to the node backend
+
     submitEdit = (e) => {
         var headers = new Headers();
         //prevent page from refresh

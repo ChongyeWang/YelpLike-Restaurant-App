@@ -16,6 +16,7 @@ import Events from './Events/Events';
 import Customers from './Customers/Customers';
 import Customer from './Customer/Customer';
 import EditCustomer from './EditCustomer/EditCustomer';
+import Setting from './Setting/Setting';
 //Create a Main Component
 class Main extends Component {
 
@@ -44,6 +45,7 @@ class Main extends Component {
                 <Switch>
                 <Route path="/customers/:id/edit" component={EditCustomer}/>
                 <Route path="/customers/:id" component={Customer}/>
+                <Route path="/customers-setting" component={Setting}/>
                 <Route path="/customers" component={Customers}/>
                 </Switch>
                 

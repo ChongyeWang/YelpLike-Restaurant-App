@@ -18,6 +18,8 @@ class RegisterRestaurant extends Component{
             email : "",
             name : "",
             location : "",
+            lat : "",
+            lon : "",
             authFlag : false,
             message : false
         }
@@ -60,6 +62,18 @@ class RegisterRestaurant extends Component{
         })
     }
 
+    latChangeHandler = (e) => {
+        this.setState({
+            lat : e.target.value
+        })
+    }
+
+    lonChangeHandler = (e) => {
+        this.setState({
+            lon : e.target.value
+        })
+    }
+
     //submit Login handler to send a request to the node backend
     submitLogin = (e) => {
         var headers = new Headers();
@@ -70,7 +84,9 @@ class RegisterRestaurant extends Component{
             password : this.state.password,
             email : this.state.email,
             name : this.state.name,
-            location : this.state.location
+            location : this.state.location,
+            lat : this.state.lat,
+            lon : this.state.lon
         }
         //set the with credentials to true
         axios.defaults.withCredentials = true;
@@ -130,6 +146,12 @@ class RegisterRestaurant extends Component{
                                 </div>
                                 <div class="form-group">
                                     <input onChange = {this.locationChangeHandler} type="text" class="form-control" name="location" placeholder="Location"/>
+                                </div>
+                                <div class="form-group">
+                                    <input onChange = {this.latChangeHandler} type="text" class="form-control" name="lat" placeholder="Latitude"/>
+                                </div>
+                                <div class="form-group">
+                                    <input onChange = {this.lonChangeHandler} type="text" class="form-control" name="lon" placeholder="Longitude"/>
                                 </div>
                                 <button onClick = {this.submitLogin} class="btn btn-primary">Register</button>                 
                         </div>

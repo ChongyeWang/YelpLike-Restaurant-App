@@ -50,9 +50,15 @@ router.get('/:id', function(req,res){
 
         var name = result[0].username;
         var email = result[0].email;
+        var phone = result[0].phone;
+        var web = result[0].web;
+        var likes = result[0].likes;
 
         data['name'] = name;
         data['email'] = email;
+        data['phone'] = phone;
+        data['web'] = web;
+        data['likes'] = likes;
 
         res.writeHead(200,{
             'Content-Type' : 'text/plain'
@@ -68,10 +74,12 @@ router.post('/:id/edit', function(req,res){
     var id = req.params.id;
     
     var email = req.body.email;
+    var phone = req.body.phone;
 
     console.log(email);
 
-    connection.query("UPDATE customer SET email = " + "'" + email + "'" + 
+    connection.query("UPDATE customer SET email = " + "'" 
+        + email + "'" + ",phone = " + "'" + phone + "'" +
         " WHERE id = " + "'" + id + "'" + ";", function (err, result) {
     
         res.writeHead(200,{
@@ -81,6 +89,9 @@ router.post('/:id/edit', function(req,res){
     });
 
 });
+
+
+
 
 
 

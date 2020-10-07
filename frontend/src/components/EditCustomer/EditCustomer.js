@@ -13,13 +13,20 @@ class EditCustomer extends Component{
         //maintain the state required for this component
         this.state = {
             email : "",
+            phone : ""
         }
         
     }
 
     emailChangeHandler = (e) => {
         this.setState({
-            email : e.target.value
+            email : e.target.value,
+        })
+    }
+
+    phoneChangeHandler = (e) => {
+        this.setState({
+            phone : e.target.value
         })
     }
 
@@ -30,6 +37,7 @@ class EditCustomer extends Component{
         e.preventDefault();
         const data = {
             email : this.state.email,
+            phone : this.state.phone
         }
 
         var id = this.props.match.params.id;
@@ -62,6 +70,10 @@ class EditCustomer extends Component{
                           
                                 <div class="form-group">
                                     <input onChange = {this.emailChangeHandler} type="text" class="form-control" name="email" placeholder="Email"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <input onChange = {this.phoneChangeHandler} type="text" class="form-control" name="phone" placeholder="Phone"/>
                                 </div>
                                 
                                 <button onClick = {this.submitEdit} class="btn btn-primary">Edit</button>  

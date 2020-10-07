@@ -58,6 +58,7 @@ class Nav extends Component {
                   <a class="nav-item nav-link"><Link to="/open-restaurant" style={{color:'white'}}>Open New Restaurant</Link></a>
                   <a class="nav-item nav-link"><Link to="/add-dish" style={{color:'white'}}>Add Dish</Link></a>
                   <a class="nav-item nav-link"><Link to="/add-event" style={{color:'white'}}>Add Event</Link></a>
+                  <a class="nav-item nav-link"><Link to="/customers-setting" style={{color:'white'}}>Setting</Link></a>
                   <a class="nav-item nav-link" href="#" >{navLogin}</a>
                    
                 </nav>
