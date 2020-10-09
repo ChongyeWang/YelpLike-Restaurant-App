@@ -599,5 +599,5 @@ app.get('/customers-setting', function(req,res){
 });
 
 //start your server on port 3001
-app.listen(3001);
+app.listen(process.env.PORT || 3001);
 console.log("Server Listening on port 3001");
