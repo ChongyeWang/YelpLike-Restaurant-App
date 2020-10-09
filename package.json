@@ -4,7 +4,7 @@
   "description": "#### This is a web application food application that is similar to yelp app using node.js and react. It involves two systems #### including user customer system and restaurant system. Registered restaurants can provide services to customers and #### customers can use these provided services.",
   "main": "index.js",
   "scripts": {
-    "start": "npm run dev",
+    "start": "npm i -D concurrently && npm install && npm run dev",
     "frontend": "cd frontend && npm start",
     "backend": "cd backend && npm start",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\""
