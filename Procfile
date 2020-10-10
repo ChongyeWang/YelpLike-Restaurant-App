@@ -1,1 +1,1 @@
-web: 6pm install && npm start
+web: npm install && npm start
